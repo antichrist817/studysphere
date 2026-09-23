@@ -1,91 +1,92 @@
+```html
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
 
-```
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>
-    {% block title %}StudySphere{% endblock %}
-</title>
+    <title>
+        {% block title %}StudySphere{% endblock %}
+    </title>
 
-<link
-    rel="stylesheet"
-    href="{{ url_for('static', filename='css/style.css') }}"
->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
 
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
-></script>
-```
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    ></script>
 
 </head>
 
 <body>
 
-```
-<header class="topbar">
+    <header class="topbar">
 
-    <div class="logo">
-        StudySphere
-    </div>
+        <div class="logo">
+            StudySphere
+        </div>
 
-    <nav>
+        <nav>
 
-        <a href="{{ url_for('home') }}">
-            Home
-        </a>
-
-        {% if session.get("user_id") %}
-
-            <a href="{{ url_for('profile') }}">
-                Profile
+            <a href="{{ url_for('home') }}">
+                Home
             </a>
 
-            <a href="{{ url_for('logout') }}">
-                Log Out
+            <a href="{{ url_for('search') }}">
+                Search
             </a>
 
-        {% else %}
+            {% if session.get("user_id") %}
 
-            <a href="{{ url_for('login') }}">
-                Log In
-            </a>
+                <a href="{{ url_for('profile') }}">
+                    Profile
+                </a>
 
-            <a href="{{ url_for('register') }}">
-                Create Account
-            </a>
+                <a href="{{ url_for('logout') }}">
+                    Log Out
+                </a>
 
-        {% endif %}
+            {% else %}
 
-    </nav>
+                <a href="{{ url_for('login') }}">
+                    Log In
+                </a>
 
-</header>
+                <a href="{{ url_for('register') }}">
+                    Create Account
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+    </header>
 
 
-<main class="content">
+    <main class="content">
 
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
 
-</main>
+    </main>
 
 
-<footer>
+    <footer>
 
-    <p>
-        StudySphere
-    </p>
+        <p>
+            StudySphere
+        </p>
 
-</footer>
-```
+    </footer>
 
 </body>
 
 </html>
+```
