@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import random
 from string import ascii_uppercase
 
-app = Flask(__name__)
+app = Flask(name)
 
 app.config["SECRET_KEY"] = "CHANGE_THIS_SECRET_LATER"
 
@@ -17,385 +17,397 @@ socketio = SocketIO(app)
 
 rooms = {}
 
-
-# =========================
-# DATABASE
-# =========================
+=========================
+DATABASE
+=========================
 
 class User(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
+id = db.Column(
+    db.Integer,
+    primary_key=True
+)
 
-    username = db.Column(
-        db.String(30),
-        unique=True,
-        nullable=False
-    )
+username = db.Column(
+    db.String(30),
+    unique=True,
+    nullable=False
+)
 
-    password = db.Column(
-        db.String(255),
-        nullable=False
-    )
+password = db.Column(
+    db.String(255),
+    nullable=False
+)
 
-    rank = db.Column(
-        db.String(30),
-        default="User",
-        nullable=False
-    )
-
+rank = db.Column(
+    db.String(30),
+    default="User",
+    nullable=False
+)
 
 with app.app_context():
-    db.create_all()
+db.create_all()
 
-
-# =========================
-# ROOM SYSTEM
-# =========================
+=========================
+ROOM SYSTEM
+=========================
 
 def generate_unique_code(length=4):
 
-    while True:
+while True:
 
-        code = "".join(
-            random.choice(ascii_uppercase)
-            for _ in range(length)
-        )
+    code = "".join(
+        random.choice(ascii_uppercase)
+        for _ in range(length)
+    )
 
-        if code not in rooms:
-            return code
-
-
-# =========================
-# HOME
-# =========================
+    if code not in rooms:
+        return code
+=========================
+HOME
+=========================
 
 @app.route("/", methods=["GET", "POST"])
 def home():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        name = request.form.get("name", "").strip()
-        code = request.form.get("code", "").strip().upper()
+    name = request.form.get(
+        "name",
+        ""
+    ).strip()
 
-        join = request.form.get("join")
-        create = request.form.get("create")
+    code = request.form.get(
+        "code",
+        ""
+    ).strip().upper()
 
-        if not name:
+    join = request.form.get("join")
+    create = request.form.get("create")
+
+    if not name:
+
+        return render_template(
+            "home.html",
+            error="Please enter a name.",
+            name=name,
+            code=code
+        )
+
+    if create:
+
+        room = generate_unique_code()
+
+        rooms[room] = {
+            "members": 0,
+            "messages": []
+        }
+
+    elif join:
+
+        if not code:
 
             return render_template(
                 "home.html",
-                error="Please enter a name.",
+                error="Please enter a room code.",
                 name=name,
                 code=code
             )
 
-        # CREATE ROOM
-
-        if create:
-
-            room = generate_unique_code()
-
-            rooms[room] = {
-                "members": 0,
-                "messages": []
-            }
-
-        # JOIN ROOM
-
-        elif join:
-
-            if not code:
-
-                return render_template(
-                    "home.html",
-                    error="Please enter a room code.",
-                    name=name,
-                    code=code
-                )
-
-            if code not in rooms:
-
-                return render_template(
-                    "home.html",
-                    error="Room does not exist.",
-                    name=name,
-                    code=code
-                )
-
-            room = code
-
-        else:
+        if code not in rooms:
 
             return render_template(
                 "home.html",
-                error="Please choose an option.",
+                error="Room does not exist.",
                 name=name,
                 code=code
             )
 
-        session["room"] = room
-        session["name"] = name
+        room = code
 
-        return redirect(url_for("room"))
+    else:
 
-    return render_template("home.html")
+        return render_template(
+            "home.html",
+            error="Please choose an option.",
+            name=name,
+            code=code
+        )
 
+    session["room"] = room
+    session["name"] = name
 
-# =========================
-# ACCOUNT CREATION
-# =========================
+    return redirect(url_for("room"))
+
+return render_template("home.html")
+=========================
+ACCOUNT CREATION
+=========================
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
+    username = request.form.get(
+        "username",
+        ""
+    ).strip()
 
-        password = request.form.get(
-            "password",
-            ""
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    if not username or not password:
+
+        return render_template(
+            "auth.html",
+            error="Please fill in all fields."
         )
 
-        if not username or not password:
+    existing_user = User.query.filter_by(
+        username=username
+    ).first()
 
-            return render_template(
-                "auth.html",
-                error="Please fill in all fields."
-            )
+    if existing_user:
 
-        existing_user = User.query.filter_by(
-            username=username
-        ).first()
-
-        if existing_user:
-
-            return render_template(
-                "auth.html",
-                error="That username is already taken."
-            )
-
-        hashed_password = generate_password_hash(
-            password
+        return render_template(
+            "auth.html",
+            error="That username is already taken."
         )
 
-        user = User(
-            username=username,
-            password=hashed_password,
-            rank="User"
-        )
+    hashed_password = generate_password_hash(
+        password
+    )
 
-        db.session.add(user)
-        db.session.commit()
+    user = User(
+        username=username,
+        password=hashed_password,
+        rank="User"
+    )
 
-        session["user_id"] = user.id
-        session["name"] = user.username
+    db.session.add(user)
+    db.session.commit()
 
-        return redirect(url_for("home"))
+    session["user_id"] = user.id
+    session["name"] = user.username
 
-    return render_template("login.html")
+    return redirect(url_for("home"))
 
-
-# =========================
-# LOGIN
-# =========================
+return render_template("auth.html")
+=========================
+LOGIN
+=========================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
+    username = request.form.get(
+        "username",
+        ""
+    ).strip()
 
-        password = request.form.get(
-            "password",
-            ""
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    user = User.query.filter_by(
+        username=username
+    ).first()
+
+    if user is None:
+
+        return render_template(
+            "login.html",
+            error="Invalid username or password."
         )
 
-        user = User.query.filter_by(
-            username=username
-        ).first()
+    if not check_password_hash(
+        user.password,
+        password
+    ):
 
-        if user is None:
+        return render_template(
+            "login.html",
+            error="Invalid username or password."
+        )
 
-            return render_template(
-                "auth.html",
-                error="Invalid username or password."
-            )
+    session["user_id"] = user.id
+    session["name"] = user.username
 
-        if not check_password_hash(
-            user.password,
-            password
-        ):
+    return redirect(url_for("home"))
 
-            return render_template(
-                "auth.html",
-                error="Invalid username or password."
-            )
+return render_template("login.html")
+=========================
+PROFILE
+=========================
 
-        session["user_id"] = user.id
-        session["name"] = user.username
+@app.route("/profile")
+def profile():
 
-        return redirect(url_for("home"))
+user_id = session.get("user_id")
 
-    return render_template("auth.html")
+if not user_id:
 
+    return redirect(url_for("login"))
 
-# =========================
-# LOGOUT
-# =========================
+user = User.query.get(user_id)
+
+if user is None:
+
+    session.clear()
+
+    return redirect(url_for("login"))
+
+return render_template(
+    "profile.html",
+    user=user
+)
+=========================
+LOGOUT
+=========================
 
 @app.route("/logout")
 def logout():
 
-    session.clear()
+session.clear()
 
-    return redirect(url_for("home"))
-
-
-# =========================
-# CHAT ROOM
-# =========================
+return redirect(url_for("home"))
+=========================
+CHAT ROOM
+=========================
 
 @app.route("/room")
 def room():
 
-    room = session.get("room")
-    name = session.get("name")
+room = session.get("room")
+name = session.get("name")
 
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
+if (
+    not room
+    or not name
+    or room not in rooms
+):
 
-        return redirect(url_for("home"))
+    return redirect(url_for("home"))
 
-    return render_template(
-        "room.html",
-        code=room,
-        messages=rooms[room]["messages"]
-    )
-
-
-# =========================
-# SEND MESSAGE
-# =========================
+return render_template(
+    "room.html",
+    code=room,
+    messages=rooms[room]["messages"]
+)
+=========================
+SEND MESSAGE
+=========================
 
 @socketio.on("message")
 def handle_message(data):
 
-    room = session.get("room")
-    name = session.get("name")
+room = session.get("room")
+name = session.get("name")
 
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
+if (
+    not room
+    or not name
+    or room not in rooms
+):
 
-        return
+    return
 
-    message = str(
-        data.get("data", "")
-    ).strip()
+message = str(
+    data.get("data", "")
+).strip()
 
-    if not message:
-        return
+if not message:
+    return
 
-    content = {
-        "name": name,
-        "message": message
-    }
+content = {
+    "name": name,
+    "message": message
+}
 
-    send(
-        content,
-        to=room
-    )
+send(
+    content,
+    to=room
+)
 
-    rooms[room]["messages"].append(
-        content
-    )
-
-
-# =========================
-# USER CONNECTS
-# =========================
+rooms[room]["messages"].append(
+    content
+)
+=========================
+USER CONNECTS
+=========================
 
 @socketio.on("connect")
 def handle_connect():
 
-    room = session.get("room")
-    name = session.get("name")
+room = session.get("room")
+name = session.get("name")
 
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
+if (
+    not room
+    or not name
+    or room not in rooms
+):
 
-        return
+    return
 
-    join_room(room)
+join_room(room)
 
-    rooms[room]["members"] += 1
+rooms[room]["members"] += 1
 
-    send(
-        {
-            "name": "StudySphere",
-            "message": f"{name} joined the room."
-        },
-        to=room
-    )
-
-
-# =========================
-# USER DISCONNECTS
-# =========================
+send(
+    {
+        "name": "StudySphere",
+        "message": f"{name} joined the room."
+    },
+    to=room
+)
+=========================
+USER DISCONNECTS
+=========================
 
 @socketio.on("disconnect")
 def handle_disconnect():
 
-    room = session.get("room")
-    name = session.get("name")
+room = session.get("room")
+name = session.get("name")
 
-    if not room:
+if not room:
+    return
+
+leave_room(room)
+
+if room in rooms:
+
+    rooms[room]["members"] -= 1
+
+    if rooms[room]["members"] <= 0:
+
+        del rooms[room]
+
         return
 
-    leave_room(room)
+if name:
 
-    if room in rooms:
-
-        rooms[room]["members"] -= 1
-
-        if rooms[room]["members"] <= 0:
-
-            del rooms[room]
-
-    if name:
-
-        send(
-            {
-                "name": "StudySphere",
-                "message": f"{name} left the room."
-            },
-            to=room
-        )
-
-
-# =========================
-# START SERVER
-# =========================
-
-if __name__ == "__main__":
-
-    socketio.run(
-        app,
-        debug=True
+    send(
+        {
+            "name": "StudySphere",
+            "message": f"{name} left the room."
+        },
+        to=room
     )
+=========================
+START SERVER
+=========================
+
+if name == "main":
+
+socketio.run(
+    app,
+    debug=True
+)
