@@ -9,7 +9,6 @@ from string import ascii_uppercase
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = "CHANGE_THIS_SECRET_LATER"
-
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///studysphere.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -25,10 +24,7 @@ rooms = {}
 
 class User(db.Model):
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
+    id = db.Column(db.Integer, primary_key=True)
 
     username = db.Column(
         db.String(30),
@@ -292,7 +288,7 @@ def login():
 
 
 # =========================
-# PROFILE
+# MY PROFILE
 # =========================
 
 @app.route("/profile")
@@ -311,6 +307,27 @@ def profile():
         session.clear()
 
         return redirect(url_for("login"))
+
+    return render_template(
+        "profile.html",
+        user=user
+    )
+
+
+# =========================
+# OTHER USER PROFILE
+# =========================
+
+@app.route("/user/<username>")
+def view_user(username):
+
+    user = User.query.filter_by(
+        username=username
+    ).first()
+
+    if user is None:
+
+        return redirect(url_for("search"))
 
     return render_template(
         "profile.html",
@@ -571,20 +588,5 @@ def handle_disconnect():
         send(
             {
                 "name": "StudySphere",
-                "message": f"{name} left the room."
-            },
-            to=room
-        )
-
-
-# =========================
-# START SERVER
-# =========================
-
-if __name__ == "__main__":
-
-    socketio.run(
-        app,
-        debug=True
-    )
+                "message": f"{name} left the
 ```
