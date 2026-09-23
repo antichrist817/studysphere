@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import random
 from string import ascii_uppercase
 
-app = Flask(name)
+app = Flask(**name**)
 
 app.config["SECRET_KEY"] = "CHANGE_THIS_SECRET_LATER"
 
@@ -17,12 +17,15 @@ socketio = SocketIO(app)
 
 rooms = {}
 
-=========================
-DATABASE
-=========================
+# =========================
+
+# DATABASE
+
+# =========================
 
 class User(db.Model):
 
+```
 id = db.Column(
     db.Integer,
     primary_key=True
@@ -45,15 +48,42 @@ rank = db.Column(
     nullable=False
 )
 
+display_name = db.Column(
+    db.String(30),
+    nullable=True
+)
+
+bio = db.Column(
+    db.String(500),
+    default="",
+    nullable=False
+)
+
+profile_picture = db.Column(
+    db.String(500),
+    default="",
+    nullable=False
+)
+
+online = db.Column(
+    db.Boolean,
+    default=False,
+    nullable=False
+)
+```
+
 with app.app_context():
 db.create_all()
 
-=========================
-ROOM SYSTEM
-=========================
+# =========================
+
+# ROOM SYSTEM
+
+# =========================
 
 def generate_unique_code(length=4):
 
+```
 while True:
 
     code = "".join(
@@ -63,13 +93,18 @@ while True:
 
     if code not in rooms:
         return code
-=========================
-HOME
-=========================
+```
+
+# =========================
+
+# HOME
+
+# =========================
 
 @app.route("/", methods=["GET", "POST"])
 def home():
 
+```
 if request.method == "POST":
 
     name = request.form.get(
@@ -140,13 +175,18 @@ if request.method == "POST":
     return redirect(url_for("room"))
 
 return render_template("home.html")
-=========================
-ACCOUNT CREATION
-=========================
+```
+
+# =========================
+
+# ACCOUNT CREATION
+
+# =========================
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
+```
 if request.method == "POST":
 
     username = request.form.get(
@@ -164,6 +204,13 @@ if request.method == "POST":
         return render_template(
             "auth.html",
             error="Please fill in all fields."
+        )
+
+    if len(username) > 30:
+
+        return render_template(
+            "auth.html",
+            error="Username must be 30 characters or less."
         )
 
     existing_user = User.query.filter_by(
@@ -184,7 +231,11 @@ if request.method == "POST":
     user = User(
         username=username,
         password=hashed_password,
-        rank="User"
+        rank="User",
+        display_name=username,
+        bio="",
+        profile_picture="",
+        online=True
     )
 
     db.session.add(user)
@@ -196,13 +247,18 @@ if request.method == "POST":
     return redirect(url_for("home"))
 
 return render_template("auth.html")
-=========================
-LOGIN
-=========================
+```
+
+# =========================
+
+# LOGIN
+
+# =========================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
+```
 if request.method == "POST":
 
     username = request.form.get(
@@ -236,19 +292,27 @@ if request.method == "POST":
             error="Invalid username or password."
         )
 
+    user.online = True
+    db.session.commit()
+
     session["user_id"] = user.id
     session["name"] = user.username
 
     return redirect(url_for("home"))
 
 return render_template("login.html")
-=========================
-PROFILE
-=========================
+```
+
+# =========================
+
+# PROFILE
+
+# =========================
 
 @app.route("/profile")
 def profile():
 
+```
 user_id = session.get("user_id")
 
 if not user_id:
@@ -267,23 +331,44 @@ return render_template(
     "profile.html",
     user=user
 )
-=========================
-LOGOUT
-=========================
+```
+
+# =========================
+
+# LOGOUT
+
+# =========================
 
 @app.route("/logout")
 def logout():
 
+```
+user_id = session.get("user_id")
+
+if user_id:
+
+    user = User.query.get(user_id)
+
+    if user:
+
+        user.online = False
+        db.session.commit()
+
 session.clear()
 
 return redirect(url_for("home"))
-=========================
-CHAT ROOM
-=========================
+```
+
+# =========================
+
+# CHAT ROOM
+
+# =========================
 
 @app.route("/room")
 def room():
 
+```
 room = session.get("room")
 name = session.get("name")
 
@@ -300,13 +385,18 @@ return render_template(
     code=room,
     messages=rooms[room]["messages"]
 )
-=========================
-SEND MESSAGE
-=========================
+```
+
+# =========================
+
+# SEND MESSAGE
+
+# =========================
 
 @socketio.on("message")
 def handle_message(data):
 
+```
 room = session.get("room")
 name = session.get("name")
 
@@ -338,13 +428,18 @@ send(
 rooms[room]["messages"].append(
     content
 )
-=========================
-USER CONNECTS
-=========================
+```
+
+# =========================
+
+# USER CONNECTS
+
+# =========================
 
 @socketio.on("connect")
 def handle_connect():
 
+```
 room = session.get("room")
 name = session.get("name")
 
@@ -367,13 +462,18 @@ send(
     },
     to=room
 )
-=========================
-USER DISCONNECTS
-=========================
+```
+
+# =========================
+
+# USER DISCONNECTS
+
+# =========================
 
 @socketio.on("disconnect")
 def handle_disconnect():
 
+```
 room = session.get("room")
 name = session.get("name")
 
@@ -401,13 +501,19 @@ if name:
         },
         to=room
     )
-=========================
-START SERVER
-=========================
+```
 
-if name == "main":
+# =========================
 
+# START SERVER
+
+# =========================
+
+if **name** == "**main**":
+
+```
 socketio.run(
     app,
     debug=True
 )
+```
