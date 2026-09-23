@@ -30,9 +30,14 @@
 
     <header class="topbar">
 
-        <div class="logo">
+        <a
+            href="{{ url_for('home') }}"
+            class="logo"
+            style="text-decoration:none;"
+        >
             StudySphere
-        </div>
+        </a>
+
 
         <nav>
 
@@ -43,6 +48,7 @@
             <a href="{{ url_for('search') }}">
                 Search
             </a>
+
 
             {% if session.get("user_id") %}
 
