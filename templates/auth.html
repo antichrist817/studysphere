@@ -1,64 +1,68 @@
 {% extends 'base.html' %}
 
-{% block title %}Account — StudySphere{% endblock %}
+{% block title %}Create Account — StudySphere{% endblock %}
 
 {% block content %}
 
 <div class="home-container">
 
-    <div class="home-card">
+```
+<div class="home-card">
 
-        <h1>StudySphere</h1>
+    <h1>StudySphere</h1>
 
-        <h2 id="form-title">Create Account</h2>
+    <h2>Create Account</h2>
 
-        <form method="post">
+    <form method="post" action="{{ url_for('register') }}">
 
-            <div class="field">
-                <label>Username</label>
+        <div class="field">
+            <label>Username</label>
 
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Choose a username"
-                    autocomplete="username"
-                    required
-                >
-            </div>
-
-            <div class="field">
-                <label>Password</label>
-
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Choose a password"
-                    autocomplete="new-password"
-                    required
-                >
-            </div>
-
-            <button
-                type="submit"
-                name="register"
-                class="create-btn"
+            <input
+                type="text"
+                name="username"
+                placeholder="Choose a username"
+                autocomplete="username"
+                required
             >
-                Create Account
-            </button>
+        </div>
 
-        </form>
+        <div class="field">
+            <label>Password</label>
 
-        {% if error %}
-            <div class="error">
-                {{ error }}
-            </div>
-        {% endif %}
+            <input
+                type="password"
+                name="password"
+                placeholder="Choose a password"
+                autocomplete="new-password"
+                required
+            >
+        </div>
 
-        <p style="text-align:center;margin-top:20px;color:#71819d;">
-            Account system coming next.
-        </p>
+        <button
+            type="submit"
+            class="create-btn"
+        >
+            Create Account
+        </button>
 
-    </div>
+    </form>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <p style="text-align:center;margin-top:20px;color:#71819d;">
+        Already have an account?
+        <a href="{{ url_for('login') }}" style="color:#4d8dff;">
+            Log in
+        </a>
+    </p>
+
+</div>
+```
 
 </div>
 
