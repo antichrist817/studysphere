@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Profile — StudySphere{% endblock %}
+{% block title %}{{ user.username }} — StudySphere{% endblock %}
 
 {% block content %}
 
@@ -9,32 +9,73 @@
 ```
 <div class="home-card">
 
-    <h1>{{ user.username }}</h1>
+    {% if user.profile_picture %}
+
+        <img
+            src="{{ user.profile_picture }}"
+            alt="Profile picture"
+            style="
+                display:block;
+                width:110px;
+                height:110px;
+                object-fit:cover;
+                border-radius:50%;
+                margin:0 auto 20px;
+                border:2px solid #263247;
+            "
+        >
+
+    {% endif %}
+
+    <h1>
+        {{ user.display_name or user.username }}
+    </h1>
 
     <p style="
         text-align:center;
         color:#4d8dff;
         font-weight:bold;
-        margin-bottom:25px;
+        margin-top:8px;
     ">
         {{ user.rank }}
     </p>
 
+    <p style="
+        text-align:center;
+        margin-top:8px;
+        color:#71819d;
+    ">
+        @{{ user.username }}
+    </p>
+
     <div style="
+        margin-top:25px;
         padding:15px;
         border:1px solid #263247;
         border-radius:10px;
         background:#0b1424;
     ">
 
-        <p style="margin-bottom:10px;">
-            <strong>Username:</strong>
-            {{ user.username }}
+        <p style="margin-bottom:15px;">
+            <strong>Status:</strong>
+
+            {% if user.online %}
+                <span style="color:#55d68a;">
+                    Online
+                </span>
+            {% else %}
+                <span style="color:#71819d;">
+                    Offline
+                </span>
+            {% endif %}
         </p>
 
-        <p>
-            <strong>Rank:</strong>
-            {{ user.rank }}
+        <p style="margin-bottom:15px;">
+            <strong>Bio:</strong>
+        </p>
+
+        <p style="color:#aebbd0;">
+            {{ user.bio or "No bio yet." }}
         </p>
 
     </div>
