@@ -136,6 +136,12 @@ created_at = db.Column(
     default=datetime.utcnow,
     nullable=False
 )
+
+read = db.Column(
+    db.Boolean,
+    default=False,
+    nullable=False
+)
 ```
 
 with app.app_context():
@@ -611,9 +617,16 @@ for conversation in conversations:
         PrivateMessage.created_at.desc()
     ).first()
 
+    unread_count = PrivateMessage.query.filter(
+        PrivateMessage.conversation_id == conversation.id,
+        PrivateMessage.sender_id != current_user.id,
+        PrivateMessage.read == False
+    ).count()
+
     inbox_conversations.append({
         "other_user": other_user,
-        "last_message": last_message
+        "last_message": last_message,
+        "unread_count": unread_count
     })
 
 inbox_conversations.sort(
@@ -625,10 +638,16 @@ inbox_conversations.sort(
     reverse=True
 )
 
+total_unread = sum(
+    conversation["unread_count"]
+    for conversation in inbox_conversations
+)
+
 return render_template(
     "inbox.html",
     current_user=current_user,
-    conversations=inbox_conversations
+    conversations=inbox_conversations,
+    total_unread=total_unread
 )
 ```
 
@@ -718,7 +737,8 @@ if request.method == "POST":
         private_message = PrivateMessage(
             conversation_id=conversation.id,
             sender_id=current_user.id,
-            message=message_text
+            message=message_text,
+            read=False
         )
 
         db.session.add(
@@ -733,6 +753,20 @@ if request.method == "POST":
             username=other_user.username
         )
     )
+
+unread_messages = PrivateMessage.query.filter(
+    PrivateMessage.conversation_id == conversation.id,
+    PrivateMessage.sender_id != current_user.id,
+    PrivateMessage.read == False
+).all()
+
+for message in unread_messages:
+
+    message.read = True
+
+if unread_messages:
+
+    db.session.commit()
 
 messages = PrivateMessage.query.filter_by(
     conversation_id=conversation.id
