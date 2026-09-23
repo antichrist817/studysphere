@@ -130,7 +130,48 @@
                 Edit Profile
             </a>
 
+        {% else %}
+
+            {% if session.get("user_id") %}
+
+                <a
+                    href="{{ url_for('private_message', username=user.username) }}"
+                    style="
+                        display:block;
+                        text-align:center;
+                        margin-top:15px;
+                        padding:13px;
+                        border-radius:8px;
+                        background:#3478f6;
+                        color:white;
+                        text-decoration:none;
+                        font-weight:bold;
+                    "
+                >
+                    Message
+                </a>
+
+            {% endif %}
+
         {% endif %}
+
+
+        <a
+            href="{{ url_for('search') }}"
+            style="
+                display:block;
+                text-align:center;
+                margin-top:10px;
+                padding:13px;
+                border-radius:8px;
+                background:#1a263a;
+                color:#b8c4d9;
+                text-decoration:none;
+                font-weight:bold;
+            "
+        >
+            Search Users
+        </a>
 
 
         <a
