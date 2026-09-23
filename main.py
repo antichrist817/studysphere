@@ -7,7 +7,7 @@ import random
 from string import ascii_uppercase
 import os
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 app.config["SECRET_KEY"] = os.environ.get(
 "SECRET_KEY",
