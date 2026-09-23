@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 ```
-<title>{% block title %}StudySphere{% endblock %}</title>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    {% block title %}StudySphere{% endblock %}
+</title>
 
 <link
     rel="stylesheet"
@@ -37,6 +45,10 @@
 
         {% if session.get("user_id") %}
 
+            <a href="{{ url_for('profile') }}">
+                Profile
+            </a>
+
             <a href="{{ url_for('logout') }}">
                 Log Out
             </a>
@@ -57,11 +69,13 @@
 
 </header>
 
+
 <main class="content">
 
     {% block content %}{% endblock %}
 
 </main>
+
 
 <footer>
 
@@ -73,4 +87,5 @@
 ```
 
 </body>
+
 </html>
