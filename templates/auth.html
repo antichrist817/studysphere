@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Account — StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+    <div class="home-card">
+
+        <h1>StudySphere</h1>
+
+        <h2 id="form-title">Create Account</h2>
+
+        <form method="post">
+
+            <div class="field">
+                <label>Username</label>
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Choose a username"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Choose a password"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                name="register"
+                class="create-btn"
+            >
+                Create Account
+            </button>
+
+        </form>
+
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <p style="text-align:center;margin-top:20px;color:#71819d;">
+            Account system coming next.
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
