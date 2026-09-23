@@ -1,0 +1,96 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile — StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+    <div class="home-card">
+
+        <h1>Edit Profile</h1>
+
+        <form method="post">
+
+            <div class="field">
+                <label>Display Name</label>
+
+                <input
+                    type="text"
+                    name="display_name"
+                    placeholder="Your display name"
+                    value="{{ user.display_name or '' }}"
+                    maxlength="30"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label>Bio</label>
+
+                <textarea
+                    name="bio"
+                    placeholder="Tell people about yourself..."
+                    maxlength="500"
+                    style="
+                        width:100%;
+                        min-height:120px;
+                        padding:13px;
+                        border-radius:8px;
+                        border:1px solid #34445f;
+                        background:#0b1424;
+                        color:white;
+                        outline:none;
+                        resize:vertical;
+                        font-family:Arial,sans-serif;
+                    "
+                >{{ user.bio or '' }}</textarea>
+            </div>
+
+            <div class="field">
+                <label>Profile Picture URL</label>
+
+                <input
+                    type="url"
+                    name="profile_picture"
+                    placeholder="https://example.com/image.jpg"
+                    value="{{ user.profile_picture or '' }}"
+                    maxlength="500"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="create-btn"
+            >
+                Save Profile
+            </button>
+
+        </form>
+
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <a
+            href="{{ url_for('profile') }}"
+            style="
+                display:block;
+                text-align:center;
+                margin-top:15px;
+                color:#71819d;
+                text-decoration:none;
+            "
+        >
+            Cancel
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```
