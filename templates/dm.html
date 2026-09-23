@@ -1,346 +1,77 @@
-{% extends 'base.html' %}
-
+    {% extends 'base.html' %}
 {% block title %}Message {{ other_user.display_name or other_user.username }} — StudySphere{% endblock %}
 
 {% block content %}
 
 <div class="message-box">
 
-```
-<!-- CHAT HEADER -->
+    <div class="dm-header">
 
-<div style="
-    padding:18px;
-    border-bottom:1px solid #263247;
-    display:flex;
-    align-items:center;
-    gap:12px;
-">
+        <div class="dm-user">
 
-    {% if other_user.profile_picture %}
-
-        <img
-            src="{{ other_user.profile_picture }}"
-            alt="Profile picture"
-            style="
-                width:45px;
-                height:45px;
-                object-fit:cover;
-                border-radius:50%;
-            "
-        >
-
-    {% else %}
-
-        <div style="
-            width:45px;
-            height:45px;
-            border-radius:50%;
-            background:#1a263a;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:#71819d;
-            font-weight:bold;
-        ">
-            {{ (other_user.display_name or other_user.username)[0]|upper }}
-        </div>
-
-    {% endif %}
-
-
-    <div>
-
-        <strong>
-            {{ other_user.display_name or other_user.username }}
-        </strong>
-
-        <div style="
-            color:#71819d;
-            font-size:12px;
-            margin-top:3px;
-        ">
-
-            @{{ other_user.username }}
-
-            {% if other_user.online %}
-
-                <span style="color:#55d68a;">
-                    • Online
-                </span>
-
+            {% if other_user.profile_picture %}
+                <img
+                    src="{{ other_user.profile_picture }}"
+                    alt="{{ other_user.display_name or other_user.username }}"
+                    class="dm-avatar"
+                >
             {% else %}
-
-                <span>
-                    • Offline
-                </span>
-
+                <div class="dm-avatar dm-avatar-placeholder">
+                    {{ (other_user.display_name or other_user.username)[0]|upper }}
+                </div>
             {% endif %}
 
+            <div>
+                <h2>{{ other_user.display_name or other_user.username }}</h2>
+
+                <p>
+                    @{{ other_user.username }}
+
+                    {% if other_user.online %}
+                        <span class="online">● Online</span>
+                    {% else %}
+                        <span class="offline">● Offline</span>
+                    {% endif %}
+                </p>
+            </div>
+
         </div>
+
+        <a href="{{ url_for('inbox') }}" class="secondary-button">
+            ← Messages
+        </a>
 
     </div>
 
-</div>
 
+    <div class="messages" id="messages">
 
-<!-- MESSAGES -->
+        {% if messages %}
 
-<div
-    class="messages"
-    id="messages"
->
+            {% for message in messages %}
 
-    {% if messages %}
+                <div class="dm-message {% if message.sender_id == session.get('user_id') %}mine{% else %}theirs{% endif %}">
 
-        {% for message in messages %}
-
-            <div
-                class="text"
-                style="
-                    align-items:flex-start;
-                    flex-direction:column;
-                    gap:4px;
-                "
-            >
-
-                <div>
-
-                    <strong>
-
-                        {% if message.sender_id == current_user.id %}
-
+                    <div class="dm-message-author">
+                        {% if message.sender_id == session.get('user_id') %}
                             You
-
                         {% else %}
-
                             {{ other_user.display_name or other_user.username }}
-
                         {% endif %}
+                    </div>
 
-                    </strong>
+                    <div class="dm-message-text">
+                        {{ message.message }}
+                    </div>
 
-                </div>
-
-
-                <div style="
-                    color:#c4cfdf;
-                    word-break:break-word;
-                ">
-
-                    {{ message.message }}
+                    <div class="dm-message-time">
+                        {{ message.created_at.strftime('%H:%M') }}
+                    </div>
 
                 </div>
 
+            {% endfor %}
 
-                <span class="muted">
+        {% else %}
 
-                    {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
-
-                </span>
-
-            </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <div
-            id="empty-message"
-            style="
-                text-align:center;
-                color:#71819d;
-                padding:30px;
-            "
-        >
-
-            No messages yet.
-
-            <br>
-
-            Start the conversation below.
-
-        </div>
-
-    {% endif %}
-
-</div>
-
-
-<!-- MESSAGE INPUT -->
-
-<form
-    method="post"
-    class="inputs"
-    id="dm-form"
->
-
-    <input
-        type="text"
-        name="message"
-        id="message"
-        placeholder="Write a message..."
-        maxlength="2000"
-        autocomplete="off"
-        required
-    >
-
-    <button type="submit">
-        Send
-    </button>
-
-</form>
-```
-
-</div>
-
-<script>
-
-const socket = io();
-
-const form = document.getElementById("dm-form");
-const messageInput = document.getElementById("message");
-const messages = document.getElementById("messages");
-
-
-const currentUserId = {{ current_user.id }};
-const otherUserId = {{ other_user.id }};
-
-
-function addMessage(data) {
-
-    const emptyMessage = document.getElementById("empty-message");
-
-    if (emptyMessage) {
-
-        emptyMessage.remove();
-
-    }
-
-
-    const div = document.createElement("div");
-
-    div.classList.add("text");
-
-    div.style.alignItems = "flex-start";
-    div.style.flexDirection = "column";
-    div.style.gap = "4px";
-
-
-    const sender = document.createElement("div");
-
-    const senderName = document.createElement("strong");
-
-    if (data.sender_id === currentUserId) {
-
-        senderName.textContent = "You";
-
-    } else {
-
-        senderName.textContent = data.sender_name;
-
-    }
-
-    sender.appendChild(senderName);
-
-
-    const messageText = document.createElement("div");
-
-    messageText.style.color = "#c4cfdf";
-    messageText.style.wordBreak = "break-word";
-    messageText.textContent = data.message;
-
-
-    const timestamp = document.createElement("span");
-
-    timestamp.classList.add("muted");
-    timestamp.textContent = data.created_at;
-
-
-    div.appendChild(sender);
-    div.appendChild(messageText);
-    div.appendChild(timestamp);
-
-    messages.appendChild(div);
-
-    messages.scrollTop = messages.scrollHeight;
-
-}
-
-
-socket.on("private_message", function(data) {
-
-    if (
-        (
-            data.sender_id === currentUserId
-            && data.receiver_id === otherUserId
-        )
-        ||
-        (
-            data.sender_id === otherUserId
-            && data.receiver_id === currentUserId
-        )
-    ) {
-
-        addMessage(data);
-
-    }
-
-});
-
-
-form.addEventListener("submit", function(event) {
-
-    event.preventDefault();
-
-    const message = messageInput.value.trim();
-
-    if (!message) {
-
-        return;
-
-    }
-
-
-    socket.emit(
-        "private_message",
-        {
-            receiver_id: otherUserId,
-            message: message
-        }
-    );
-
-
-    messageInput.value = "";
-
-    messageInput.focus();
-
-});
-
-
-messageInput.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Enter"
-            && !event.shiftKey
-        ) {
-
-            event.preventDefault();
-
-            form.requestSubmit();
-
-        }
-
-    }
-);
-
-
-messages.scrollTop = messages.scrollHeight;
-
-messageInput.focus();
-
-</script>
-
-{% endblock %}
+            <div class="empty
