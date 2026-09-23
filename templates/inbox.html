@@ -21,31 +21,60 @@
     <div style="
         padding:25px 30px;
         border-bottom:1px solid #1d2a3d;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:15px;
     ">
 
-        <p style="
-            color:#3b82f6;
-            font-size:12px;
-            font-weight:bold;
-            letter-spacing:1px;
-            margin-bottom:7px;
-        ">
-            STUDYSPHERE
-        </p>
+        <div>
 
-        <h1 style="
-            margin:0;
-            font-size:28px;
-        ">
-            Messages
-        </h1>
+            <p style="
+                color:#3b82f6;
+                font-size:12px;
+                font-weight:bold;
+                letter-spacing:1px;
+                margin-bottom:7px;
+            ">
+                STUDYSPHERE
+            </p>
 
-        <p style="
-            color:#7f8da3;
-            margin-top:7px;
-        ">
-            Your private conversations.
-        </p>
+            <h1 style="
+                margin:0;
+                font-size:28px;
+            ">
+                Messages
+            </h1>
+
+            <p style="
+                color:#7f8da3;
+                margin-top:7px;
+            ">
+                Your private conversations.
+            </p>
+
+        </div>
+
+
+        {% if total_unread > 0 %}
+
+            <div style="
+                min-width:34px;
+                height:34px;
+                padding:0 10px;
+                border-radius:999px;
+                background:#3b82f6;
+                color:white;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:13px;
+                font-weight:bold;
+            ">
+                {{ total_unread }}
+            </div>
+
+        {% endif %}
 
     </div>
 
@@ -120,6 +149,7 @@
                             display:flex;
                             align-items:center;
                             gap:8px;
+                            flex-wrap:wrap;
                         ">
 
                             <strong>
@@ -148,9 +178,13 @@
                             {% if conversation.last_message %}
 
                                 {% if conversation.last_message.sender_id == current_user.id %}
+
                                     You:
+
                                 {% else %}
+
                                     {{ conversation.other_user.display_name or conversation.other_user.username }}:
+
                                 {% endif %}
 
                                 {{ conversation.last_message.message }}
@@ -167,9 +201,33 @@
 
 
                     <div style="
-                        text-align:right;
+                        display:flex;
+                        flex-direction:column;
+                        align-items:flex-end;
+                        gap:7px;
                         flex-shrink:0;
                     ">
+
+                        {% if conversation.unread_count > 0 %}
+
+                            <span style="
+                                min-width:25px;
+                                height:25px;
+                                padding:0 7px;
+                                border-radius:999px;
+                                background:#3b82f6;
+                                color:white;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                font-size:11px;
+                                font-weight:bold;
+                            ">
+                                {{ conversation.unread_count }}
+                            </span>
+
+                        {% endif %}
+
 
                         {% if conversation.other_user.online %}
 
@@ -261,5 +319,21 @@
 ```
 
 </div>
+
+<style>
+
+@media (max-width:600px) {
+
+    .home-card > div:first-child {
+        padding:20px !important;
+    }
+
+    .home-card > div:last-child {
+        padding:10px !important;
+    }
+
+}
+
+</style>
 
 {% endblock %}
