@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages — StudySphere{% endblock %}
+
+{% block content %}
+
+<div style="
+    width:100%;
+    max-width:850px;
+">
+
+```
+<div class="home-card" style="
+    max-width:none;
+    padding:0;
+    overflow:hidden;
+">
+
+    <!-- HEADER -->
+
+    <div style="
+        padding:25px 30px;
+        border-bottom:1px solid #1d2a3d;
+    ">
+
+        <p style="
+            color:#3b82f6;
+            font-size:12px;
+            font-weight:bold;
+            letter-spacing:1px;
+            margin-bottom:7px;
+        ">
+            STUDYSPHERE
+        </p>
+
+        <h1 style="
+            margin:0;
+            font-size:28px;
+        ">
+            Messages
+        </h1>
+
+        <p style="
+            color:#7f8da3;
+            margin-top:7px;
+        ">
+            Your private conversations.
+        </p>
+
+    </div>
+
+
+    <!-- CONVERSATIONS -->
+
+    <div style="
+        padding:15px;
+    ">
+
+        {% if conversations %}
+
+            {% for conversation in conversations %}
+
+                <a
+                    href="{{ url_for('private_message', username=conversation.other_user.username) }}"
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:14px;
+                        padding:15px;
+                        border:1px solid #1d2a3d;
+                        border-radius:11px;
+                        background:#0b1424;
+                        color:white;
+                        text-decoration:none;
+                        margin-bottom:10px;
+                        transition:0.15s ease;
+                    "
+                >
+
+                    {% if conversation.other_user.profile_picture %}
+
+                        <img
+                            src="{{ conversation.other_user.profile_picture }}"
+                            alt="Profile picture"
+                            style="
+                                width:52px;
+                                height:52px;
+                                object-fit:cover;
+                                border-radius:50%;
+                            "
+                        >
+
+                    {% else %}
+
+                        <div style="
+                            width:52px;
+                            height:52px;
+                            flex-shrink:0;
+                            border-radius:50%;
+                            background:#182338;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            color:#8da0bb;
+                            font-size:20px;
+                            font-weight:bold;
+                        ">
+                            {{ (conversation.other_user.display_name or conversation.other_user.username)[0]|upper }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <div style="
+                        min-width:0;
+                        flex:1;
+                    ">
+
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:8px;
+                        ">
+
+                            <strong>
+                                {{ conversation.other_user.display_name or conversation.other_user.username }}
+                            </strong>
+
+                            <span style="
+                                color:#71819d;
+                                font-size:12px;
+                            ">
+                                @{{ conversation.other_user.username }}
+                            </span>
+
+                        </div>
+
+
+                        <p style="
+                            color:#71819d;
+                            margin-top:5px;
+                            font-size:13px;
+                            white-space:nowrap;
+                            overflow:hidden;
+                            text-overflow:ellipsis;
+                        ">
+
+                            {% if conversation.last_message %}
+
+                                {% if conversation.last_message.sender_id == current_user.id %}
+                                    You:
+                                {% else %}
+                                    {{ conversation.other_user.display_name or conversation.other_user.username }}:
+                                {% endif %}
+
+                                {{ conversation.last_message.message }}
+
+                            {% else %}
+
+                                No messages yet.
+
+                            {% endif %}
+
+                        </p>
+
+                    </div>
+
+
+                    <div style="
+                        text-align:right;
+                        flex-shrink:0;
+                    ">
+
+                        {% if conversation.other_user.online %}
+
+                            <span style="
+                                color:#42d392;
+                                font-size:11px;
+                            ">
+                                ● Online
+                            </span>
+
+                        {% else %}
+
+                            <span style="
+                                color:#536177;
+                                font-size:11px;
+                            ">
+                                ● Offline
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div style="
+                text-align:center;
+                padding:50px 20px;
+                color:#71819d;
+            ">
+
+                <div style="
+                    font-size:35px;
+                    margin-bottom:12px;
+                ">
+                    —
+                </div>
+
+                <h2 style="
+                    color:#aebbd0;
+                    margin-bottom:8px;
+                ">
+                    No conversations yet
+                </h2>
+
+                <p>
+                    Search for someone and start a private conversation.
+                </p>
+
+                <a
+                    href="{{ url_for('search') }}"
+                    class="create-btn"
+                    style="
+                        display:inline-block;
+                        width:auto;
+                        margin-top:18px;
+                        text-decoration:none;
+                    "
+                >
+                    Find People
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<a
+    href="{{ url_for('home') }}"
+    style="
+        display:block;
+        text-align:center;
+        margin-top:16px;
+        color:#536177;
+        text-decoration:none;
+        font-size:13px;
+    "
+>
+    Back to StudySphere
+</a>
+```
+
+</div>
+
+{% endblock %}
