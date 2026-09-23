@@ -1,7 +1,5 @@
-```text
 Flask
 Flask-SocketIO
 Flask-SQLAlchemy
 Werkzeug
-simple-websocket
-```
+gunicorn
