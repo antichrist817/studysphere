@@ -1,38 +1,76 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}StudySphere{% endblock %}</title>
+```
+<title>{% block title %}StudySphere{% endblock %}</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}"
+>
 
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
-    ></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+></script>
+```
+
 </head>
 
 <body>
 
-    <header class="topbar">
-        <div class="logo">StudySphere</div>
+```
+<header class="topbar">
 
-        <nav>
-            <a href="/">Home</a>
-        </nav>
-    </header>
+    <div class="logo">
+        StudySphere
+    </div>
 
-    <main class="content">
-        {% block content %}{% endblock %}
-    </main>
+    <nav>
 
-    <footer>
-        <p>StudySphere</p>
-    </footer>
+        <a href="{{ url_for('home') }}">
+            Home
+        </a>
+
+        {% if session.get("user_id") %}
+
+            <a href="{{ url_for('logout') }}">
+                Log Out
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('login') }}">
+                Log In
+            </a>
+
+            <a href="{{ url_for('register') }}">
+                Create Account
+            </a>
+
+        {% endif %}
+
+    </nav>
+
+</header>
+
+<main class="content">
+
+    {% block content %}{% endblock %}
+
+</main>
+
+<footer>
+
+    <p>
+        StudySphere
+    </p>
+
+</footer>
+```
 
 </body>
 </html>
