@@ -335,6 +335,85 @@ return render_template(
 
 # =========================
 
+# EDIT PROFILE
+
+# =========================
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+def edit_profile():
+
+```
+user_id = session.get("user_id")
+
+if not user_id:
+
+    return redirect(url_for("login"))
+
+user = User.query.get(user_id)
+
+if user is None:
+
+    session.clear()
+
+    return redirect(url_for("login"))
+
+if request.method == "POST":
+
+    display_name = request.form.get(
+        "display_name",
+        ""
+    ).strip()
+
+    bio = request.form.get(
+        "bio",
+        ""
+    ).strip()
+
+    profile_picture = request.form.get(
+        "profile_picture",
+        ""
+    ).strip()
+
+    if len(display_name) > 30:
+
+        return render_template(
+            "edit_profile.html",
+            user=user,
+            error="Display name must be 30 characters or less."
+        )
+
+    if len(bio) > 500:
+
+        return render_template(
+            "edit_profile.html",
+            user=user,
+            error="Bio must be 500 characters or less."
+        )
+
+    if len(profile_picture) > 500:
+
+        return render_template(
+            "edit_profile.html",
+            user=user,
+            error="Profile picture URL is too long."
+        )
+
+    user.display_name = display_name
+    user.bio = bio
+    user.profile_picture = profile_picture
+
+    db.session.commit()
+
+    return redirect(url_for("profile"))
+
+return render_template(
+    "edit_profile.html",
+    user=user
+)
+```
+
+# =========================
+
 # LOGOUT
 
 # =========================
