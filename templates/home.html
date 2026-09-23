@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+    <div class="home-card">
+
+        <h1>StudySphere</h1>
+
+        <h2>Enter The Chat</h2>
+
+        <form method="post">
+
+            <div class="field">
+                <label>Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Pick a name"
+                    value="{{ name or '' }}"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="join-row">
+
+                <input
+                    type="text"
+                    name="code"
+                    placeholder="Room Code"
+                    value="{{ code or '' }}"
+                    autocomplete="off"
+                >
+
+                <button type="submit" name="join">
+                    Join Room
+                </button>
+
+            </div>
+
+            <button
+                type="submit"
+                name="create"
+                class="create-btn"
+            >
+                Create A Room
+            </button>
+
+        </form>
+
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
