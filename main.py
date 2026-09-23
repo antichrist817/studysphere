@@ -653,7 +653,7 @@ return render_template(
 
 # =========================
 
-# PRIVATE MESSAGE
+# PRIVATE MESSAGE PAGE
 
 # =========================
 
@@ -779,6 +779,199 @@ return render_template(
     current_user=current_user,
     other_user=other_user,
     messages=messages
+)
+```
+
+# =========================
+
+# REAL-TIME PRIVATE MESSAGES
+
+# =========================
+
+@socketio.on("private_message")
+def handle_private_message(data):
+
+```
+sender_id = session.get("user_id")
+
+if not sender_id:
+
+    return
+
+sender = db.session.get(
+    User,
+    sender_id
+)
+
+if sender is None:
+
+    return
+
+try:
+
+    receiver_id = int(
+        data.get("receiver_id")
+    )
+
+except (
+    TypeError,
+    ValueError
+):
+
+    return
+
+message_text = str(
+    data.get("message", "")
+).strip()
+
+if not message_text:
+
+    return
+
+if len(message_text) > 2000:
+
+    return
+
+if receiver_id == sender.id:
+
+    return
+
+receiver = db.session.get(
+    User,
+    receiver_id
+)
+
+if receiver is None:
+
+    return
+
+user_one = min(
+    sender.id,
+    receiver.id
+)
+
+user_two = max(
+    sender.id,
+    receiver.id
+)
+
+conversation = Conversation.query.filter_by(
+    user_one_id=user_one,
+    user_two_id=user_two
+).first()
+
+if conversation is None:
+
+    conversation = Conversation(
+        user_one_id=user_one,
+        user_two_id=user_two
+    )
+
+    db.session.add(
+        conversation
+    )
+
+    try:
+
+        db.session.commit()
+
+    except Exception:
+
+        db.session.rollback()
+
+        conversation = Conversation.query.filter_by(
+            user_one_id=user_one,
+            user_two_id=user_two
+        ).first()
+
+if conversation is None:
+
+    return
+
+private_message = PrivateMessage(
+    conversation_id=conversation.id,
+    sender_id=sender.id,
+    message=message_text,
+    read=False
+)
+
+db.session.add(
+    private_message
+)
+
+db.session.commit()
+
+timestamp = private_message.created_at.strftime(
+    "%Y-%m-%d %H:%M"
+)
+
+socketio.emit(
+    "private_message",
+    {
+        "sender_id": sender.id,
+        "receiver_id": receiver.id,
+        "sender_name": sender.display_name or sender.username,
+        "message": private_message.message,
+        "created_at": timestamp
+    },
+    room=f"dm_{conversation.id}"
+)
+```
+
+# =========================
+
+# PRIVATE MESSAGE ROOMS
+
+# =========================
+
+@socketio.on("join_private_conversation")
+def join_private_conversation(data):
+
+```
+user_id = session.get("user_id")
+
+if not user_id:
+
+    return
+
+try:
+
+    other_user_id = int(
+        data.get("other_user_id")
+    )
+
+except (
+    TypeError,
+    ValueError
+):
+
+    return
+
+if user_id == other_user_id:
+
+    return
+
+user_one = min(
+    user_id,
+    other_user_id
+)
+
+user_two = max(
+    user_id,
+    other_user_id
+)
+
+conversation = Conversation.query.filter_by(
+    user_one_id=user_one,
+    user_two_id=user_two
+).first()
+
+if conversation is None:
+
+    return
+
+join_room(
+    f"dm_{conversation.id}"
 )
 ```
 
