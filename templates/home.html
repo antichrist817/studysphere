@@ -6,16 +6,70 @@
 
 <div class="home-container">
 
-    <div class="home-card">
+```
+<div class="home-card">
 
-        <h1>StudySphere</h1>
+    <h1>StudySphere</h1>
+
+    {% if session.get("user_id") %}
+
+        <h2>Welcome, {{ session.get("name") }}!</h2>
+
+        <p style="text-align:center;color:#71819d;margin-bottom:20px;">
+            You're logged in.
+        </p>
+
+        <a
+            href="{{ url_for('logout') }}"
+            style="
+                display:block;
+                text-align:center;
+                padding:13px;
+                border-radius:8px;
+                background:#3478f6;
+                color:white;
+                text-decoration:none;
+                font-weight:bold;
+            "
+        >
+            Log Out
+        </a>
+
+    {% else %}
+
+        <h2>Welcome to StudySphere</h2>
+
+        <div style="display:flex;gap:10px;margin-bottom:25px;">
+
+            <a
+                href="{{ url_for('register') }}"
+                class="create-btn"
+                style="text-align:center;text-decoration:none;"
+            >
+                Create Account
+            </a>
+
+            <a
+                href="{{ url_for('login') }}"
+                class="create-btn"
+                style="text-align:center;text-decoration:none;"
+            >
+                Log In
+            </a>
+
+        </div>
+
+        <p style="text-align:center;color:#71819d;margin-bottom:20px;">
+            Or continue as a guest.
+        </p>
 
         <h2>Enter The Chat</h2>
 
         <form method="post">
 
             <div class="field">
-                <label>Name</label>
+                <label>Guest Name</label>
+
                 <input
                     type="text"
                     name="name"
@@ -51,13 +105,16 @@
 
         </form>
 
-        {% if error %}
-            <div class="error">
-                {{ error }}
-            </div>
-        {% endif %}
+    {% endif %}
 
-    </div>
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+</div>
+```
 
 </div>
 
