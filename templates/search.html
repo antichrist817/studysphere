@@ -1,0 +1,157 @@
+```html
+{% extends 'base.html' %}
+
+{% block title %}Search Users — StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+    <div class="home-card">
+
+        <h1>Search Users</h1>
+
+        <form method="get" action="{{ url_for('search') }}">
+
+            <div class="field">
+
+                <label>Username or Display Name</label>
+
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="Search for a user..."
+                    value="{{ query }}"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="create-btn"
+            >
+                Search
+            </button>
+
+        </form>
+
+
+        {% if query %}
+
+            <div style="margin-top:25px;">
+
+                <h2>
+                    Results for "{{ query }}"
+                </h2>
+
+
+                {% if users %}
+
+                    {% for found_user in users %}
+
+                        <a
+                            href="{{ url_for('view_user', username=found_user.username) }}"
+                            style="
+                                display:flex;
+                                align-items:center;
+                                gap:12px;
+                                padding:12px;
+                                margin-top:10px;
+                                border:1px solid #263247;
+                                border-radius:10px;
+                                background:#0b1424;
+                                color:white;
+                                text-decoration:none;
+                            "
+                        >
+
+                            {% if found_user.profile_picture %}
+
+                                <img
+                                    src="{{ found_user.profile_picture }}"
+                                    alt="Profile picture"
+                                    style="
+                                        width:45px;
+                                        height:45px;
+                                        object-fit:cover;
+                                        border-radius:50%;
+                                    "
+                                >
+
+                            {% else %}
+
+                                <div style="
+                                    width:45px;
+                                    height:45px;
+                                    border-radius:50%;
+                                    background:#1a263a;
+                                    display:flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    color:#71819d;
+                                    font-weight:bold;
+                                ">
+                                    {{ (found_user.display_name or found_user.username)[0]|upper }}
+                                </div>
+
+                            {% endif %}
+
+
+                            <div>
+
+                                <strong>
+                                    {{ found_user.display_name or found_user.username }}
+                                </strong>
+
+                                <div style="
+                                    color:#71819d;
+                                    font-size:13px;
+                                    margin-top:3px;
+                                ">
+                                    @{{ found_user.username }}
+                                </div>
+
+                            </div>
+
+
+                            <span style="
+                                margin-left:auto;
+                                color:#71819d;
+                                font-size:12px;
+                            ">
+
+                                {% if found_user.online %}
+                                    ● Online
+                                {% else %}
+                                    ● Offline
+                                {% endif %}
+
+                            </span>
+
+                        </a>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p style="
+                        text-align:center;
+                        color:#71819d;
+                        margin-top:20px;
+                    ">
+                        No users found.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+```
