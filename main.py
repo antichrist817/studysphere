@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from flask_socketio import join_room, leave_room, send, SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import random
 from string import ascii_uppercase
 
@@ -24,7 +25,10 @@ rooms = {}
 
 class User(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     username = db.Column(
         db.String(30),
@@ -63,6 +67,57 @@ class User(db.Model):
     online = db.Column(
         db.Boolean,
         default=False,
+        nullable=False
+    )
+
+
+class Conversation(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    user_one_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+    user_two_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+
+class PrivateMessage(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    conversation_id = db.Column(
+        db.Integer,
+        db.ForeignKey("conversation.id"),
+        nullable=False
+    )
+
+    sender_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+    message = db.Column(
+        db.String(2000),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
         nullable=False
     )
 
@@ -440,153 +495,84 @@ def edit_profile():
 
 
 # =========================
-# LOGOUT
+# START PRIVATE MESSAGE
 # =========================
 
-@app.route("/logout")
-def logout():
+@app.route("/dm/<username>", methods=["GET", "POST"])
+def private_message(username):
 
     user_id = session.get("user_id")
 
-    if user_id:
+    if not user_id:
 
-        user = User.query.get(user_id)
+        return redirect(url_for("login"))
 
-        if user:
+    current_user = User.query.get(user_id)
 
-            user.online = False
+    other_user = User.query.filter_by(
+        username=username
+    ).first()
+
+    if current_user is None or other_user is None:
+
+        return redirect(url_for("search"))
+
+    if current_user.id == other_user.id:
+
+        return redirect(url_for("profile"))
+
+    user_one = min(
+        current_user.id,
+        other_user.id
+    )
+
+    user_two = max(
+        current_user.id,
+        other_user.id
+    )
+
+    conversation = Conversation.query.filter_by(
+        user_one_id=user_one,
+        user_two_id=user_two
+    ).first()
+
+    if conversation is None:
+
+        conversation = Conversation(
+            user_one_id=user_one,
+            user_two_id=user_two
+        )
+
+        db.session.add(conversation)
+        db.session.commit()
+
+    if request.method == "POST":
+
+        message_text = request.form.get(
+            "message",
+            ""
+        ).strip()
+
+        if message_text:
+
+            private_message = PrivateMessage(
+                conversation_id=conversation.id,
+                sender_id=current_user.id,
+                message=message_text
+            )
+
+            db.session.add(private_message)
             db.session.commit()
 
-    session.clear()
+        return redirect(
+            url_for(
+                "private_message",
+                username=other_user.username
+            )
+        )
 
-    return redirect(url_for("home"))
-
-
-# =========================
-# CHAT ROOM
-# =========================
-
-@app.route("/room")
-def room():
-
-    room = session.get("room")
-    name = session.get("name")
-
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
-
-        return redirect(url_for("home"))
-
-    return render_template(
-        "room.html",
-        code=room,
-        messages=rooms[room]["messages"]
-    )
-
-
-# =========================
-# SEND MESSAGE
-# =========================
-
-@socketio.on("message")
-def handle_message(data):
-
-    room = session.get("room")
-    name = session.get("name")
-
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
-
-        return
-
-    message = str(
-        data.get("data", "")
-    ).strip()
-
-    if not message:
-        return
-
-    content = {
-        "name": name,
-        "message": message
-    }
-
-    send(
-        content,
-        to=room
-    )
-
-    rooms[room]["messages"].append(
-        content
-    )
-
-
-# =========================
-# USER CONNECTS
-# =========================
-
-@socketio.on("connect")
-def handle_connect():
-
-    room = session.get("room")
-    name = session.get("name")
-
-    if (
-        not room
-        or not name
-        or room not in rooms
-    ):
-
-        return
-
-    join_room(room)
-
-    rooms[room]["members"] += 1
-
-    send(
-        {
-            "name": "StudySphere",
-            "message": f"{name} joined the room."
-        },
-        to=room
-    )
-
-
-# =========================
-# USER DISCONNECTS
-# =========================
-
-@socketio.on("disconnect")
-def handle_disconnect():
-
-    room = session.get("room")
-    name = session.get("name")
-
-    if not room:
-        return
-
-    leave_room(room)
-
-    if room in rooms:
-
-        rooms[room]["members"] -= 1
-
-        if rooms[room]["members"] <= 0:
-
-            del rooms[room]
-
-            return
-
-    if name:
-
-        send(
-            {
-                "name": "StudySphere",
-                "message": f"{name} left the
+    messages = PrivateMessage.query.filter_by(
+        conversation_id=conversation.id
+    ).order_by(
+        PrivateMessage.created
 ```
