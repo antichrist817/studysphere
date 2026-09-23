@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile — StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+```
+<div class="home-card">
+
+    <h1>{{ user.username }}</h1>
+
+    <p style="
+        text-align:center;
+        color:#4d8dff;
+        font-weight:bold;
+        margin-bottom:25px;
+    ">
+        {{ user.rank }}
+    </p>
+
+    <div style="
+        padding:15px;
+        border:1px solid #263247;
+        border-radius:10px;
+        background:#0b1424;
+    ">
+
+        <p style="margin-bottom:10px;">
+            <strong>Username:</strong>
+            {{ user.username }}
+        </p>
+
+        <p>
+            <strong>Rank:</strong>
+            {{ user.rank }}
+        </p>
+
+    </div>
+
+    <a
+        href="{{ url_for('home') }}"
+        style="
+            display:block;
+            text-align:center;
+            margin-top:20px;
+            padding:13px;
+            border-radius:8px;
+            background:#3478f6;
+            color:white;
+            text-decoration:none;
+            font-weight:bold;
+        "
+    >
+        Back Home
+    </a>
+
+</div>
+```
+
+</div>
+
+{% endblock %}
