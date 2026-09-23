@@ -196,7 +196,7 @@ def register():
 
         return redirect(url_for("home"))
 
-    return render_template("auth.html")
+    return render_template("login.html")
 
 
 # =========================
