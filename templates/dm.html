@@ -7,6 +7,8 @@
 
 <div class="message-box">
 
+    <!-- CHAT HEADER -->
+
     <div style="
         padding:18px;
         border-bottom:1px solid #263247;
@@ -46,6 +48,7 @@
 
         {% endif %}
 
+
         <div>
 
             <strong>
@@ -57,23 +60,31 @@
                 font-size:12px;
                 margin-top:3px;
             ">
+
                 @{{ other_user.username }}
 
                 {% if other_user.online %}
+
                     <span style="color:#55d68a;">
                         • Online
                     </span>
+
                 {% else %}
-                    <span style="color:#71819d;">
+
+                    <span>
                         • Offline
                     </span>
+
                 {% endif %}
+
             </div>
 
         </div>
 
     </div>
 
+
+    <!-- MESSAGES -->
 
     <div
         class="messages"
@@ -96,24 +107,36 @@
                     <div>
 
                         <strong>
+
                             {% if message.sender_id == current_user.id %}
+
                                 You
+
                             {% else %}
+
                                 {{ other_user.display_name or other_user.username }}
+
                             {% endif %}
+
                         </strong>
 
                     </div>
+
 
                     <div style="
                         color:#c4cfdf;
                         word-break:break-word;
                     ">
+
                         {{ message.message }}
+
                     </div>
 
+
                     <span class="muted">
+
                         {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
+
                     </span>
 
                 </div>
@@ -127,13 +150,21 @@
                 color:#71819d;
                 padding:30px;
             ">
-                No messages yet. Start the conversation.
+
+                No messages yet.
+
+                <br>
+
+                Start the conversation below.
+
             </div>
 
         {% endif %}
 
     </div>
 
+
+    <!-- MESSAGE INPUT -->
 
     <form
         method="post"
@@ -163,13 +194,13 @@
 
 const messageInput = document.getElementById("message");
 
-messageInput.focus();
+if (messageInput) {
 
-messageInput.addEventListener("keydown", function(event) {
+    messageInput.focus();
 
-    if (event.key === "Enter") {
+    messageInput.addEventListener("keydown", function(event) {
 
-        if (!event.shiftKey) {
+        if (event.key === "Enter" && !event.shiftKey) {
 
             event.preventDefault();
 
@@ -177,9 +208,18 @@ messageInput.addEventListener("keydown", function(event) {
 
         }
 
-    }
+    });
 
-});
+}
+
+
+const messages = document.getElementById("messages");
+
+if (messages) {
+
+    messages.scrollTop = messages.scrollHeight;
+
+}
 
 </script>
 
