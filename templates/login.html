@@ -1,3 +1,4 @@
+```html
 {% extends 'base.html' %}
 
 {% block title %}Log In — StudySphere{% endblock %}
@@ -6,64 +7,144 @@
 
 <div class="home-container">
 
-```
-<div class="home-card">
+    <div class="home-card">
 
-    <h1>StudySphere</h1>
+        <div style="
+            text-align:center;
+            margin-bottom:30px;
+        ">
 
-    <h2>Log In</h2>
+            <p style="
+                color:#3b82f6;
+                font-size:12px;
+                font-weight:bold;
+                letter-spacing:1px;
+                margin-bottom:10px;
+            ">
+                STUDYSPHERE
+            </p>
 
-    <form method="post" action="{{ url_for('login') }}">
+            <h1>
+                Welcome Back
+            </h1>
 
-        <div class="field">
-            <label>Username</label>
+            <p style="
+                color:#7f8da3;
+                margin-top:10px;
+                line-height:1.5;
+            ">
+                Log in to continue to your account.
+            </p>
 
-            <input
-                type="text"
-                name="username"
-                placeholder="Enter your username"
-                autocomplete="username"
-                required
+        </div>
+
+
+        <form method="post">
+
+            <div class="field">
+
+                <label>
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Your username"
+                    maxlength="30"
+                    autocomplete="username"
+                    required
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Your password"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="create-btn"
             >
-        </div>
+                Log In
+            </button>
 
-        <div class="field">
-            <label>Password</label>
+        </form>
 
-            <input
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                required
+
+        {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+        {% endif %}
+
+
+        <div style="
+            text-align:center;
+            margin-top:25px;
+            padding-top:20px;
+            border-top:1px solid #1d2a3d;
+        ">
+
+            <p style="
+                color:#7f8da3;
+                font-size:14px;
+                margin-bottom:10px;
+            ">
+                Don't have an account?
+            </p>
+
+            <a
+                href="{{ url_for('register') }}"
+                style="
+                    color:#4d8dff;
+                    text-decoration:none;
+                    font-weight:bold;
+                "
             >
+                Create one
+            </a>
+
         </div>
 
-        <button
-            type="submit"
-            class="create-btn"
-        >
-            Log In
-        </button>
 
-    </form>
+        <div style="
+            text-align:center;
+            margin-top:18px;
+        ">
 
-    {% if error %}
-        <div class="error">
-            {{ error }}
+            <a
+                href="{{ url_for('home') }}"
+                style="
+                    color:#536177;
+                    text-decoration:none;
+                    font-size:13px;
+                "
+            >
+                Back to StudySphere
+            </a>
+
         </div>
-    {% endif %}
 
-    <p style="text-align:center;margin-top:20px;color:#71819d;">
-        Don't have an account?
-        <a href="{{ url_for('register') }}" style="color:#4d8dff;">
-            Create one
-        </a>
-    </p>
-
-</div>
-```
+    </div>
 
 </div>
 
 {% endblock %}
+```
