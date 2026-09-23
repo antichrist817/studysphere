@@ -6,10 +6,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import random
 from string import ascii_uppercase
+import os
+
 
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = "CHANGE_THIS_SECRET_LATER"
+app.config["SECRET_KEY"] = os.environ.get(
+    "SECRET_KEY",
+    "development-secret-change-before-deployment"
+)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///studysphere.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -90,6 +96,14 @@ class Conversation(db.Model):
         nullable=False
     )
 
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_one_id",
+            "user_two_id",
+            name="unique_conversation_users"
+        ),
+    )
+
 
 class PrivateMessage(db.Model):
 
@@ -140,6 +154,7 @@ def generate_unique_code(length=4):
         )
 
         if code not in rooms:
+
             return code
 
 
@@ -355,7 +370,10 @@ def profile():
 
         return redirect(url_for("login"))
 
-    user = User.query.get(user_id)
+    user = db.session.get(
+        User,
+        user_id
+    )
 
     if user is None:
 
@@ -407,8 +425,13 @@ def search():
     if query:
 
         users = User.query.filter(
-            User.username.ilike(f"%{query}%")
-            | User.display_name.ilike(f"%{query}%")
+            User.username.ilike(
+                f"%{query}%"
+            )
+            |
+            User.display_name.ilike(
+                f"%{query}%"
+            )
         ).all()
 
     return render_template(
@@ -431,7 +454,10 @@ def edit_profile():
 
         return redirect(url_for("login"))
 
-    user = User.query.get(user_id)
+    user = db.session.get(
+        User,
+        user_id
+    )
 
     if user is None:
 
@@ -471,108 +497,4 @@ def edit_profile():
                 user=user,
                 error="Bio must be 500 characters or less."
             )
-
-        if len(profile_picture) > 500:
-
-            return render_template(
-                "edit_profile.html",
-                user=user,
-                error="Profile picture URL is too long."
-            )
-
-        user.display_name = display_name
-        user.bio = bio
-        user.profile_picture = profile_picture
-
-        db.session.commit()
-
-        return redirect(url_for("profile"))
-
-    return render_template(
-        "edit_profile.html",
-        user=user
-    )
-
-
-# =========================
-# START PRIVATE MESSAGE
-# =========================
-
-@app.route("/dm/<username>", methods=["GET", "POST"])
-def private_message(username):
-
-    user_id = session.get("user_id")
-
-    if not user_id:
-
-        return redirect(url_for("login"))
-
-    current_user = User.query.get(user_id)
-
-    other_user = User.query.filter_by(
-        username=username
-    ).first()
-
-    if current_user is None or other_user is None:
-
-        return redirect(url_for("search"))
-
-    if current_user.id == other_user.id:
-
-        return redirect(url_for("profile"))
-
-    user_one = min(
-        current_user.id,
-        other_user.id
-    )
-
-    user_two = max(
-        current_user.id,
-        other_user.id
-    )
-
-    conversation = Conversation.query.filter_by(
-        user_one_id=user_one,
-        user_two_id=user_two
-    ).first()
-
-    if conversation is None:
-
-        conversation = Conversation(
-            user_one_id=user_one,
-            user_two_id=user_two
-        )
-
-        db.session.add(conversation)
-        db.session.commit()
-
-    if request.method == "POST":
-
-        message_text = request.form.get(
-            "message",
-            ""
-        ).strip()
-
-        if message_text:
-
-            private_message = PrivateMessage(
-                conversation_id=conversation.id,
-                sender_id=current_user.id,
-                message=message_text
-            )
-
-            db.session.add(private_message)
-            db.session.commit()
-
-        return redirect(
-            url_for(
-                "private_message",
-                username=other_user.username
-            )
-        )
-
-    messages = PrivateMessage.query.filter_by(
-        conversation_id=conversation.id
-    ).order_by(
-        PrivateMessage.created
 ```
