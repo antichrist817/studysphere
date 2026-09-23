@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In — StudySphere{% endblock %}
+
+{% block content %}
+
+<div class="home-container">
+
+```
+<div class="home-card">
+
+    <h1>StudySphere</h1>
+
+    <h2>Log In</h2>
+
+    <form method="post" action="{{ url_for('login') }}">
+
+        <div class="field">
+            <label>Username</label>
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Enter your username"
+                autocomplete="username"
+                required
+            >
+        </div>
+
+        <div class="field">
+            <label>Password</label>
+
+            <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="create-btn"
+        >
+            Log In
+        </button>
+
+    </form>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <p style="text-align:center;margin-top:20px;color:#71819d;">
+        Don't have an account?
+        <a href="{{ url_for('register') }}" style="color:#4d8dff;">
+            Create one
+        </a>
+    </p>
+
+</div>
+```
+
+</div>
+
+{% endblock %}
