@@ -15,7 +15,7 @@ from flask import (
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, or_
 
 
 # =========================================================
@@ -276,11 +276,17 @@ def home():
         action = request.form.get("action", "").lower()
         code = request.form.get("code", "").strip().upper()
 
-        # Accept the common form button names as well.
+        # Accept the form button names used by home.html.
         if not action:
-            if request.form.get("create_room") is not None:
+            if (
+                request.form.get("create") is not None
+                or request.form.get("create_room") is not None
+            ):
                 action = "create"
-            elif request.form.get("join_room") is not None:
+            elif (
+                request.form.get("join") is not None
+                or request.form.get("join_room") is not None
+            ):
                 action = "join"
 
         if action == "create":
@@ -455,8 +461,6 @@ def logout():
     user = get_logged_in_user()
 
     if user is not None:
-        # The disconnect handler will update online status when the
-        # user's remaining active sockets disconnect.
         user_id = user.id
         session.clear()
 
@@ -590,7 +594,7 @@ def inbox():
     conversations = (
         Conversation.query
         .filter(
-            db.or_(
+            or_(
                 Conversation.user_one_id == user.id,
                 Conversation.user_two_id == user.id,
             )
