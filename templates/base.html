@@ -8,71 +8,66 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
-
 <body class="{% if session.get('user_id') %}app-page{% elif request.endpoint in ['login', 'register'] %}auth-page{% else %}public-page{% endif %}">
 
 {% if session.get('user_id') %}
-
 <header class="app-topbar">
     <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle sidebar">☰</button>
-
-    <a href="{{ url_for('home') }}" class="app-logo">
-        Study<span>Sphere</span>
-    </a>
-
+    <a href="{{ url_for('home') }}" class="app-logo">Study<span>Sphere</span></a>
     <div class="topbar-actions">
         <a href="{{ url_for('inbox') }}" class="topbar-icon" aria-label="Messages">✉</a>
         <a href="{{ url_for('search') }}" class="topbar-icon" aria-label="Find people">♙</a>
-        <a href="{{ url_for('profile') }}" class="topbar-profile" aria-label="My profile">
-            {{ session.get('name', 'U')[:1]|upper }}
-        </a>
+        <a href="{{ url_for('profile') }}" class="topbar-profile" aria-label="My profile">{{ session.get('name', 'U')[:1]|upper }}</a>
     </div>
 </header>
 
 <div class="app-layout">
-
     <aside class="app-sidebar" id="appSidebar">
         <nav class="sidebar-nav">
-
             <a href="{{ url_for('home') }}" class="sidebar-link" title="Home">
                 <span class="sidebar-icon">⌂</span>
                 <span class="sidebar-label">Home</span>
             </a>
-
             <a href="{{ url_for('main_chat') }}" class="sidebar-link" title="Main Chat">
                 <span class="sidebar-icon">▤</span>
                 <span class="sidebar-label">Main Chat</span>
             </a>
-
             <a href="{{ url_for('search') }}" class="sidebar-link" title="Find people">
                 <span class="sidebar-icon">♙</span>
                 <span class="sidebar-label">Find people</span>
             </a>
-
             <a href="{{ url_for('inbox') }}" class="sidebar-link" title="Messages">
                 <span class="sidebar-icon">✉</span>
                 <span class="sidebar-label">Messages</span>
             </a>
-
             <a href="{{ url_for('profile') }}" class="sidebar-link" title="My profile">
                 <span class="sidebar-icon">▣</span>
                 <span class="sidebar-label">My profile</span>
             </a>
-
             <a href="{{ url_for('logout') }}" class="sidebar-link sidebar-logout" title="Log out">
                 <span class="sidebar-icon">⇥</span>
                 <span class="sidebar-label">Log out</span>
             </a>
-
         </nav>
     </aside>
+{% else %}
+{% if request.endpoint not in ['login', 'register'] %}
+<header class="public-topbar">
+    <a href="{{ url_for('home') }}" class="app-logo">Study<span>Sphere</span></a>
+    <nav class="public-nav">
+        <a href="{{ url_for('login') }}">Log in</a>
+        <a href="{{ url_for('register') }}" class="public-signup">Create account</a>
+    </nav>
+</header>
+{% endif %}
+{% endif %}
 
-    <main class="app-main">
-        {% block content %}{% endblock %}
-    </main>
+<main class="{% if session.get('user_id') %}app-main{% else %}public-main{% endif %}">
+    {% block content %}{% endblock %}
+</main>
 
+{% if session.get('user_id') %}
 </div>
-
 <script>
 (() => {
     const toggle = document.getElementById("menuToggle");
@@ -86,26 +81,6 @@
     }
 })();
 </script>
-
-{% else %}
-
-{% if request.endpoint not in ['login', 'register'] %}
-<header class="public-topbar">
-    <a href="{{ url_for('home') }}" class="app-logo">
-        Study<span>Sphere</span>
-    </a>
-
-    <nav class="public-nav">
-        <a href="{{ url_for('login') }}">Log in</a>
-        <a href="{{ url_for('register') }}" class="public-signup">Create account</a>
-    </nav>
-</header>
-{% endif %}
-
-<main class="public-main">
-    {% block content %}{% endblock %}
-</main>
-
 {% endif %}
 
 </body>
