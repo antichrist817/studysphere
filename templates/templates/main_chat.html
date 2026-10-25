@@ -1,0 +1,546 @@
+
+{% extends 'base.html' %}
+{% block title %}Main Chat — StudySphere{% endblock %}
+
+{% block content %}
+<div class="sc-layout">
+    <section class="sc-chat">
+        <header class="sc-header">
+            <div class="sc-heading">
+                <span class="sc-flame">🔥</span>
+                <div>
+                    <h1>Global Chat</h1>
+                    <p>Talk, meet people, and hang out.</p>
+                </div>
+            </div>
+            <span class="sc-live"><span></span> LIVE CHAT</span>
+        </header>
+
+        <div class="sc-welcome">
+            🔥 <span>Welcome to StudySphere. Keep it respectful and have fun.</span>
+        </div>
+
+        <div class="sc-messages" id="scMessages" aria-live="polite">
+            {% for message in messages %}
+            <article class="sc-message" data-message-id="{{ message.id }}">
+                <div class="sc-avatar">
+                    {% if message.profile_picture %}
+                    <img src="{{ message.profile_picture }}" alt=""
+                         onerror="this.remove();">
+                    {% endif %}
+                    <span>{{ message.name[:1]|upper }}</span>
+                </div>
+                <div class="sc-message-content">
+                    <div class="sc-meta">
+                        <a class="sc-username"
+                           href="{{ url_for('view_user', username=message.username) }}">{{ message.name }}</a>
+                        <span class="sc-rank">{{ message.rank }}</span>
+                        <time class="sc-time">{{ message.created_at }}</time>
+                    </div>
+                    <p class="sc-message-text">{{ message.message }}</p>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="sc-composer">
+            <div class="sc-input-row">
+                <button type="button" class="sc-emoji-toggle"
+                        id="scEmojiToggle" aria-label="Choose emoji"
+                        title="Choose emoji">☺</button>
+                <input id="scInput" type="text" maxlength="2000"
+                       placeholder="Type something..."
+                       autocomplete="off" aria-label="Chat message">
+                <button type="button" class="sc-send" id="scSend">
+                    SEND <span>➤</span>
+                </button>
+            </div>
+            <div class="sc-input-footer">
+                <span id="scConnection">Connecting to chat...</span>
+                <span id="scCount">0 / 2000</span>
+            </div>
+            <div class="sc-emoji-picker" id="scEmojiPicker" hidden>
+                <button type="button">😀</button>
+                <button type="button">😂</button>
+                <button type="button">😭</button>
+                <button type="button">💀</button>
+                <button type="button">❤️</button>
+                <button type="button">🔥</button>
+                <button type="button">😎</button>
+                <button type="button">👀</button>
+                <button type="button">👍</button>
+                <button type="button">🥹</button>
+                <button type="button">🤨</button>
+                <button type="button">✨</button>
+            </div>
+        </div>
+    </section>
+
+    <aside class="sc-sidebar">
+        <section class="sc-online-card">
+            <header class="sc-side-header">
+                <div>
+                    <h2>People here</h2>
+                    <p>Who's in the chat right now</p>
+                </div>
+                <span class="sc-online-count" id="scOnlineCount">0</span>
+            </header>
+            <div class="sc-online-list" id="scOnlineList">
+                <p class="sc-empty">Connecting...</p>
+            </div>
+        </section>
+
+        <section class="sc-info-card">
+            <div class="sc-info-icon">✦</div>
+            <h3>Make yourself at home.</h3>
+            <p>Chat, make friends, and be part of the StudySphere community.</p>
+        </section>
+    </aside>
+</div>
+
+<style>
+.sc-layout {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 265px;
+    gap:18px;
+    width:100%;
+    max-width:1500px;
+    min-height:75vh;
+    margin:0 auto;
+    color:#f5eeee;
+}
+.sc-chat,.sc-online-card,.sc-info-card {
+    min-width:0;
+    background:rgba(15,10,12,.91);
+    border:1px solid rgba(255,91,45,.22);
+    border-radius:14px;
+    box-shadow:0 12px 40px rgba(0,0,0,.25);
+    backdrop-filter:blur(12px);
+}
+.sc-chat {
+    display:flex;
+    flex-direction:column;
+    min-height:75vh;
+    overflow:hidden;
+}
+.sc-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:20px;
+    border-bottom:1px solid rgba(255,91,45,.16);
+    background:linear-gradient(100deg,rgba(95,24,18,.4),transparent);
+}
+.sc-heading {display:flex;align-items:center;gap:12px}
+.sc-flame {font-size:27px}
+.sc-header h1 {margin:0 0 4px;font-size:21px;font-weight:800}
+.sc-header p,.sc-side-header p {
+    margin:0;color:#a99b9b;font-size:12px
+}
+.sc-live {
+    display:flex;align-items:center;gap:7px;
+    padding:7px 10px;border:1px solid rgba(255,91,45,.25);
+    border-radius:7px;color:#ff9b76;font-size:10px;
+    font-weight:800;letter-spacing:1px;white-space:nowrap
+}
+.sc-live span {
+    width:6px;height:6px;border-radius:50%;
+    background:#ff663b;box-shadow:0 0 10px #ff663b
+}
+.sc-welcome {
+    display:flex;align-items:center;gap:10px;
+    margin:15px 18px 0;padding:11px 13px;
+    border:1px solid rgba(255,91,45,.17);border-radius:8px;
+    background:rgba(90,27,16,.2);color:#d7bcb5;font-size:12px
+}
+.sc-messages {
+    display:flex;flex:1;flex-direction:column;gap:2px;
+    min-height:350px;max-height:60vh;padding:16px 18px;
+    overflow-y:auto;scroll-behavior:smooth
+}
+.sc-message {
+    display:flex;align-items:flex-start;gap:11px;
+    padding:10px 8px;border-radius:9px
+}
+.sc-message:hover {background:rgba(255,255,255,.025)}
+.sc-avatar,.sc-online-avatar {
+    position:relative;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;overflow:hidden;
+    border:1px solid rgba(255,104,61,.35);
+    border-radius:10px;background:linear-gradient(145deg,#762d20,#261316);
+    color:#ffcfb8;font-size:14px;font-weight:800
+}
+.sc-avatar {width:37px;height:37px}
+.sc-avatar img,.sc-online-avatar img {
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover
+}
+.sc-avatar img:not([src]),.sc-online-avatar img:not([src]) {display:none}
+.sc-message-content {flex:1;min-width:0}
+.sc-meta {display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:1px 0 5px}
+.sc-username {
+    color:#ffb08d;font-size:13px;font-weight:800;text-decoration:none
+}
+.sc-username:hover {color:#fff;text-decoration:underline}
+.sc-rank {
+    padding:3px 6px;border:1px solid rgba(255,112,67,.2);
+    border-radius:4px;background:rgba(255,91,45,.09);
+    color:#ff9674;font-size:9px;font-weight:800
+}
+.sc-time {color:#796e70;font-size:10px}
+.sc-message-text {
+    margin:0;color:#e0d6d6;font-size:13px;line-height:1.65;
+    overflow-wrap:anywhere;white-space:pre-wrap
+}
+.sc-composer {
+    position:relative;padding:15px 18px 12px;
+    border-top:1px solid rgba(255,91,45,.15);
+    background:rgba(8,6,7,.4)
+}
+.sc-input-row {
+    display:flex;align-items:center;gap:9px;padding:7px;
+    border:1px solid rgba(255,91,45,.25);border-radius:10px;
+    background:rgba(8,6,7,.75)
+}
+.sc-input-row:focus-within {
+    border-color:rgba(255,104,61,.8);
+    box-shadow:0 0 0 3px rgba(255,91,45,.07)
+}
+.sc-emoji-toggle {
+    width:36px;height:36px;flex-shrink:0;border:0;
+    border-radius:7px;background:transparent;color:#d6a18f;
+    font-size:23px;cursor:pointer
+}
+.sc-emoji-toggle:hover {background:rgba(255,91,45,.12)}
+#scInput {
+    width:100%;min-width:0;padding:10px 3px;border:0;outline:none;
+    background:transparent;color:#f5eeee;font:inherit;font-size:13px
+}
+#scInput::placeholder {color:#786d6e}
+.sc-send {
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    min-height:37px;padding:0 15px;border:0;border-radius:7px;
+    background:linear-gradient(120deg,#b93d25,#f36b37);
+    color:white;font-size:10px;font-weight:900;letter-spacing:.8px;
+    cursor:pointer;white-space:nowrap
+}
+.sc-send:hover {filter:brightness(1.12)}
+.sc-send:disabled {opacity:.5;cursor:not-allowed}
+.sc-input-footer {
+    display:flex;justify-content:space-between;gap:10px;
+    padding:8px 3px 0;color:#74686a;font-size:10px
+}
+.sc-emoji-picker {
+    position:absolute;bottom:88px;left:20px;z-index:10;
+    display:grid;grid-template-columns:repeat(6,38px);gap:5px;
+    padding:10px;border:1px solid rgba(255,91,45,.3);
+    border-radius:10px;background:#171012;
+    box-shadow:0 10px 30px rgba(0,0,0,.4)
+}
+.sc-emoji-picker[hidden] {display:none}
+.sc-emoji-picker button {
+    width:38px;height:38px;border:0;border-radius:6px;
+    background:transparent;font-size:21px;cursor:pointer
+}
+.sc-emoji-picker button:hover {background:rgba(255,91,45,.15)}
+.sc-sidebar {display:flex;flex-direction:column;gap:15px;min-width:0}
+.sc-online-card {overflow:hidden}
+.sc-side-header {
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:18px 15px;
+    border-bottom:1px solid rgba(255,91,45,.14)
+}
+.sc-side-header h2 {margin:0 0 5px;font-size:14px;font-weight:800}
+.sc-online-count {
+    display:flex;align-items:center;justify-content:center;
+    min-width:27px;height:27px;padding:0 7px;
+    border:1px solid rgba(255,91,45,.3);border-radius:7px;
+    background:rgba(255,91,45,.1);color:#ff9b76;
+    font-size:12px;font-weight:800
+}
+.sc-online-list {
+    display:flex;flex-direction:column;gap:2px;
+    max-height:430px;padding:9px;overflow-y:auto
+}
+.sc-online-person {
+    display:flex;align-items:center;gap:10px;padding:9px 7px;
+    border-radius:8px;text-decoration:none
+}
+.sc-online-person:hover {background:rgba(255,91,45,.07)}
+.sc-online-avatar {
+    width:34px;height:34px;
+    border-radius:9px;font-size:12px
+}
+.sc-online-indicator {
+    position:absolute;right:0;bottom:0;width:9px;height:9px;
+    border:2px solid #171012;border-radius:50%;background:#58d68d
+}
+.sc-online-details {
+    display:flex;flex:1;flex-direction:column;gap:4px;min-width:0
+}
+.sc-online-name {
+    overflow:hidden;color:#e5dada;font-size:12px;font-weight:700;
+    text-overflow:ellipsis;white-space:nowrap
+}
+.sc-online-rank {color:#a18d8d;font-size:10px}
+.sc-empty {padding:12px 7px;color:#928182;font-size:12px;line-height:1.5}
+.sc-info-card {
+    padding:20px 17px;
+    background:linear-gradient(145deg,rgba(86,28,19,.32),rgba(15,10,12,.9))
+}
+.sc-info-icon {
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;margin-bottom:13px;
+    border:1px solid rgba(255,91,45,.3);border-radius:10px;
+    background:rgba(255,91,45,.1);color:#ff9b76;font-size:20px
+}
+.sc-info-card h3 {margin:0 0 8px;font-size:14px}
+.sc-info-card p {margin:0;color:#a99b9b;font-size:12px;line-height:1.7}
+@media(max-width:950px) {
+    .sc-layout {grid-template-columns:minmax(0,1fr)}
+    .sc-chat {min-height:65vh}
+    .sc-sidebar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .sc-online-list {max-height:260px}
+}
+@media(max-width:560px) {
+    .sc-header {padding:15px 12px}
+    .sc-header h1 {font-size:18px}
+    .sc-live {padding:6px;font-size:9px}
+    .sc-messages {min-height:300px;padding:10px 8px}
+    .sc-welcome {margin:10px 10px 0}
+    .sc-composer {padding:11px 9px}
+    .sc-send {gap:5px;padding:0 10px}
+    .sc-sidebar {grid-template-columns:minmax(0,1fr)}
+    .sc-emoji-picker {grid-template-columns:repeat(6,34px);left:10px}
+    .sc-emoji-picker button {width:34px;height:34px}
+}
+</style>
+
+<script>
+(() => {
+    const messagesBox = document.getElementById("scMessages");
+    const input = document.getElementById("scInput");
+    const sendButton = document.getElementById("scSend");
+    const emojiToggle = document.getElementById("scEmojiToggle");
+    const emojiPicker = document.getElementById("scEmojiPicker");
+    const count = document.getElementById("scCount");
+    const connection = document.getElementById("scConnection");
+    const onlineList = document.getElementById("scOnlineList");
+    const onlineCount = document.getElementById("scOnlineCount");
+
+    if (!messagesBox || !input || !sendButton || typeof io !== "function") {
+        if (connection) connection.textContent = "Chat could not initialise.";
+        return;
+    }
+
+    const socket = io();
+    const renderedIds = new Set();
+
+    function scrollToBottom() {
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    function element(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    }
+
+    function makeAvatar(name, picture, online = false) {
+        const avatar = element(
+            "div",
+            online ? "sc-online-avatar" : "sc-avatar"
+        );
+
+        // Initial remains visible if the profile picture fails to load.
+        avatar.appendChild(
+            element("span", "", (name || "U").slice(0, 1).toUpperCase())
+        );
+
+        if (picture) {
+            const img = document.createElement("img");
+            img.src = picture;
+            img.alt = "";
+            img.onerror = () => img.remove();
+            avatar.appendChild(img);
+        }
+
+        if (online) {
+            avatar.appendChild(element("span", "sc-online-indicator"));
+        }
+
+        return avatar;
+    }
+
+    function addMessage(message) {
+        if (!message) return;
+
+        if (message.id !== undefined && message.id !== null) {
+            const id = String(message.id);
+            if (renderedIds.has(id)) return;
+            renderedIds.add(id);
+        }
+
+        const article = element("article", "sc-message");
+        if (message.id !== undefined) {
+            article.dataset.messageId = String(message.id);
+        }
+
+        const name = message.name || "Unknown user";
+        const avatar = makeAvatar(name, message.profile_picture || "");
+        const content = element("div", "sc-message-content");
+        const meta = element("div", "sc-meta");
+        const username = element("a", "sc-username", name);
+
+        username.href = message.username
+            ? "/user/" + encodeURIComponent(message.username)
+            : "#";
+
+        meta.appendChild(username);
+        meta.appendChild(element("span", "sc-rank", message.rank || "User"));
+        meta.appendChild(element("time", "sc-time", message.created_at || ""));
+
+        content.appendChild(meta);
+        content.appendChild(
+            element("p", "sc-message-text", message.message || "")
+        );
+
+        article.append(avatar, content);
+        messagesBox.appendChild(article);
+        scrollToBottom();
+    }
+
+    function renderHistory(history) {
+        if (!Array.isArray(history)) return;
+
+        messagesBox.replaceChildren();
+        renderedIds.clear();
+        history.forEach(addMessage);
+        scrollToBottom();
+    }
+
+    function renderMembers(members) {
+        if (!Array.isArray(members)) return;
+
+        onlineList.replaceChildren();
+        onlineCount.textContent = String(members.length);
+
+        if (members.length === 0) {
+            onlineList.appendChild(
+                element("p", "sc-empty", "No one is showing in the chat yet.")
+            );
+            return;
+        }
+
+        members.forEach(member => {
+            const link = element("a", "sc-online-person");
+            link.href = "/user/" + encodeURIComponent(member.username || "");
+
+            const avatar = makeAvatar(
+                member.name || member.username || "User",
+                member.profile_picture || "",
+                true
+            );
+
+            const details = element("div", "sc-online-details");
+            details.appendChild(
+                element(
+                    "span",
+                    "sc-online-name",
+                    member.name || member.username || "User"
+                )
+            );
+            details.appendChild(
+                element("span", "sc-online-rank", member.rank || "User")
+            );
+
+            link.append(avatar, details);
+            onlineList.appendChild(link);
+        });
+    }
+
+    function sendMessage() {
+        const message = input.value.trim();
+
+        if (!message || message.length > 2000 || !socket.connected) return;
+
+        sendButton.disabled = true;
+        socket.emit("main_chat_message", {message});
+
+        input.value = "";
+        count.textContent = "0 / 2000";
+        sendButton.disabled = false;
+        input.focus();
+    }
+
+    input.addEventListener("input", () => {
+        count.textContent = input.value.length + " / 2000";
+    });
+
+    input.addEventListener("keydown", event => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    sendButton.addEventListener("click", sendMessage);
+
+    emojiToggle.addEventListener("click", () => {
+        emojiPicker.hidden = !emojiPicker.hidden;
+    });
+
+    emojiPicker.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+            const start = input.selectionStart ?? input.value.length;
+            const end = input.selectionEnd ?? input.value.length;
+            const emoji = button.textContent || "";
+
+            if (input.value.length + emoji.length > 2000) return;
+
+            input.value =
+                input.value.slice(0, start) +
+                emoji +
+                input.value.slice(end);
+
+            const cursor = start + emoji.length;
+            input.focus();
+            input.setSelectionRange(cursor, cursor);
+            count.textContent = input.value.length + " / 2000";
+            emojiPicker.hidden = true;
+        });
+    });
+
+    document.addEventListener("click", event => {
+        if (
+            !emojiPicker.contains(event.target) &&
+            !emojiToggle.contains(event.target)
+        ) {
+            emojiPicker.hidden = true;
+        }
+    });
+
+    socket.on("connect", () => {
+        connection.textContent = "Connected";
+        input.placeholder = "Type something...";
+        socket.emit("join_main_chat");
+    });
+
+    socket.on("disconnect", () => {
+        connection.textContent = "Reconnecting...";
+        input.placeholder = "Connection lost — reconnecting...";
+    });
+
+    socket.on("connect_error", () => {
+        connection.textContent = "Connection error";
+    });
+
+    socket.on("main_chat_history", renderHistory);
+    socket.on("main_chat_members", renderMembers);
+    socket.on("main_chat_message", addMessage);
+
+    scrollToBottom();
+})();
+</script>
+{% endblock %}
